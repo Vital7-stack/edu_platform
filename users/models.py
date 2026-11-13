@@ -1,5 +1,9 @@
+from decimal import Decimal
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
+
+from lms.models import Course, Lesson
 
 
 class UserManager(BaseUserManager):
@@ -31,8 +35,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'email'   # <- авторизация по email вместо username
-    REQUIRED_FIELDS = []       # при createsuperuser дополнительное не спрашиваем
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     objects = UserManager()
 
@@ -42,3 +46,54 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+
+class Payment(models.Model):
+    CASH = 'наличные'
+    TRANSFER = 'перевод на счет'
+    PAYMENT_METHOD_CHOICES = [
+        (CASH, 'Наличные'),
+        (TRANSFER, 'Перевод на счет'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='payments',
+        verbose_name='Пользователь',
+    )
+    payment_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата оплаты',
+    )
+    paid_course = models.ForeignKey(
+        Course,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='payments',
+        verbose_name='Оплаченный курс',
+    )
+    paid_lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='payments',
+        verbose_name='Оплаченный урок',
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Сумма оплаты',
+    )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        verbose_name='Способ оплаты',
+    )
+
+    def __str__(self):
+        return f'{self.user} — {self.amount} ({self.payment_method})'
+
+    class Meta:
+        verbose_name = 'Платёж'
+        verbose_name_plural = 'Платежи'
