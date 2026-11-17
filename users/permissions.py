@@ -19,3 +19,10 @@ class IsOwner(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.owner == request.user
+
+
+class IsProfileOwner(permissions.BasePermission):
+    """Профиль доступен только самому пользователю."""
+
+    def has_object_permission(self, request, view, obj):
+        return obj == request.user

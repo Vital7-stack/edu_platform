@@ -10,13 +10,13 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    owner = serializers.ReadOnlyField(source='owner.email')
+    owner = serializers.ReadOnlyField(source='owner.id')
     lessons_count = serializers.SerializerMethodField()
     lessons = LessonSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
-        fields = ['id', 'name', 'description', 'preview', 'lessons_count', 'lessons']
+        fields = ['id', 'name', 'description', 'preview', 'lessons_count', 'lessons', 'owner']
 
     def get_lessons_count(self, course):
         return course.lessons.count()
