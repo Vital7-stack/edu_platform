@@ -1,8 +1,13 @@
 from rest_framework import serializers
+
+from lms.serializers import CourseSerializer, LessonSerializer
 from users.models import User, Payment
 
 
 class PaymentSerializer(serializers.ModelSerializer):
+    paid_course = CourseSerializer(read_only=True)
+    paid_lesson = LessonSerializer(read_only=True)
+
     class Meta:
         model = Payment
         fields = '__all__'
