@@ -13,7 +13,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Персональные данные', {'fields': ('first_name', 'last_name', 'phone', 'city', 'avatar')}),
         ('Права доступа', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Важные даты', {'fields': ('last_login', 'date_joined')}),
+        ('Важные даты', {'fields': ('last_login',)}),  # убрали date_joined
     )
 
     add_fieldsets = (
