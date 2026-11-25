@@ -1,10 +1,9 @@
-git add .
-git commit -m "feat: url validator, course subscription toggle, pagination, tests with coverage"
-git push -u origin hw-validators-subscriptions-pagination-testsvenv/
+venv/
+.env
+db.sqlite3
 __pycache__/
 *.pyc
-db.sqlite3
-media/
-.env
 .idea/
 .vscode/
+htmlcov/
+.coverage
