@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from paginators import LessonPaginator, CoursePaginator
 
 from lms.models import Course, Lesson
 from lms.permissions import IsModerator, IsOwner
@@ -10,6 +11,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """Полный CRUD для курса одним классом."""
 
     serializer_class = CourseSerializer
+    pagination_class = CoursePaginator   # <-- добавили
 
     def get_queryset(self):
         user = self.request.user
@@ -32,6 +34,7 @@ class LessonListCreateAPIView(ListCreateAPIView):
     """GET /lessons/ — список уроков, POST /lessons/ — создать урок."""
 
     serializer_class = LessonSerializer
+    pagination_class = LessonPaginator   # <-- добавили
 
     def get_queryset(self):
         user = self.request.user

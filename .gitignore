@@ -1,4 +1,6 @@
-venv/
+git add .
+git commit -m "feat: url validator, course subscription toggle, pagination, tests with coverage"
+git push -u origin hw-validators-subscriptions-pagination-testsvenv/
 __pycache__/
 *.pyc
 db.sqlite3
