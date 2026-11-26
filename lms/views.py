@@ -1,8 +1,16 @@
-from rest_framework import viewsets, permissions
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, permissions, status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from paginators import LessonPaginator, CoursePaginator
 
-from lms.models import Course, Lesson
+from lms.models import Course, Lesson, Subscription
 from lms.permissions import IsModerator, IsOwner
 from lms.serializers import CourseSerializer, LessonSerializer
 
@@ -72,3 +80,20 @@ class LessonRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         else:  # GET — просмотр одного урока
             self.permission_classes = [permissions.IsAuthenticated]
         return super().get_permissions()
+
+
+
+class SubscriptionToggleAPIView(APIView):
+    """POST: добавляет подписку, если её нет, и удаляет, если она есть."""
+
+    def post(self, request, pk):
+        course = get_object_or_404(Course, pk=pk)
+        subscription, created = Subscription.objects.get_or_create(
+            user=request.user, course=course
+        )
+        if created:
+            message = 'подписка добавлена'
+        else:
+            subscription.delete()
+            message = 'подписка удалена'
+        return Response({'message': message}, status=status.HTTP_200_OK)
