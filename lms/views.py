@@ -1,9 +1,4 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, status
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.views import APIView
@@ -19,7 +14,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """Полный CRUD для курса одним классом."""
 
     serializer_class = CourseSerializer
-    pagination_class = CoursePaginator   # <-- добавили
+    pagination_class = CoursePaginator
 
     def get_queryset(self):
         user = self.request.user
@@ -42,7 +37,7 @@ class LessonListCreateAPIView(ListCreateAPIView):
     """GET /lessons/ — список уроков, POST /lessons/ — создать урок."""
 
     serializer_class = LessonSerializer
-    pagination_class = LessonPaginator   # <-- добавили
+    pagination_class = LessonPaginator
 
     def get_queryset(self):
         user = self.request.user
@@ -80,7 +75,6 @@ class LessonRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         else:  # GET — просмотр одного урока
             self.permission_classes = [permissions.IsAuthenticated]
         return super().get_permissions()
-
 
 
 class SubscriptionToggleAPIView(APIView):

@@ -6,7 +6,12 @@ from lms.models import Course, Lesson, Subscription
 
 class LessonSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.email')
-    video_url = serializers.URLField(validators=[validate_video_url])
+    video_url = serializers.URLField(
+        validators=[validate_video_url],
+        required=False,
+        allow_null=True,
+        allow_blank=True,
+    )
 
     class Meta:
         model = Lesson

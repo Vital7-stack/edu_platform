@@ -9,17 +9,33 @@ from lms.models import Course, Lesson, Subscription
 User = get_user_model()
 
 
-class LessonAccessTests(APITestCase):
+class LessonCRUDTests(APITestCase):
 
     def setUp(self):
         self.owner = User.objects.create_user(email='owner@t.ru', password='12345')
         self.moderator = User.objects.create_user(email='mod@t.ru', password='12345')
-        # модератор обязательно добавляется в группу — замечание наставника
         self.moderator.groups.add(Group.objects.get_or_create(name='moderators')[0])
         self.other_user = User.objects.create_user(email='other@t.ru', password='12345')
 
         self.course = Course.objects.create(name='Тестовый курс', owner=self.owner)
         self.lesson = Lesson.objects.create(name='Тестовый урок', course=self.course, owner=self.owner)
+
+    def test_create_lesson(self):
+        """Создание урока: владелец проставляется автоматически."""
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.post('/api/lessons/', {
+            'name': 'Новый урок',
+            'course': self.course.pk,
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Lesson.objects.filter(name='Новый урок').count(), 1)
+
+    def test_delete_lesson(self):
+        """Удаление своего урока."""
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.delete(f'/api/lessons/{self.lesson.pk}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Lesson.objects.filter(pk=self.lesson.pk).exists())
 
     def test_retrieve_lesson(self):
         """Получение отдельного урока."""
@@ -27,6 +43,26 @@ class LessonAccessTests(APITestCase):
         response = self.client.get(f'/api/lessons/{self.lesson.pk}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Тестовый урок')
+
+    def test_lesson_youtube_url_allowed(self):
+        """Ссылка на YouTube проходит валидацию."""
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.post('/api/lessons/', {
+            'name': 'Урок с видео',
+            'course': self.course.pk,
+            'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        })
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_lesson_invalid_url_blocked(self):
+        """Ссылка на сторонний ресурс блокируется валидатором."""
+        self.client.force_authenticate(user=self.owner)
+        response = self.client.post('/api/lessons/', {
+            'name': 'Урок с чужим видео',
+            'course': self.course.pk,
+            'video_url': 'https://vimeo.com/123456',
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_moderator_can_update_lesson(self):
         """Модератор может редактировать чужой урок."""
